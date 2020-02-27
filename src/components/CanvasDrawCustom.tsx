@@ -1,4 +1,4 @@
-import React, {FunctionComponent} from 'react';
+import React, {FunctionComponent, useEffect} from 'react';
 import './ExploreContainer.css';
 import {IonApp, IonButton, IonButtons, IonContent, IonIcon, IonRow, IonToolbar} from "@ionic/react";
 import {arrowRedoOutline, arrowUndoOutline, trashOutline} from "ionicons/icons";
@@ -17,9 +17,10 @@ const CanvasDrawCustom: FunctionComponent = () => {
     let canvas: CanvasDraw | null;
     const { StatusBar } = Plugins;
 
+    useEffect(() => {StatusBar.hide()}, [])
+
     return (
         <IonContent>
-            {StatusBar.hide()}
             <IonRow>
                 <CanvasDraw
                     ref={canvasDraw => (canvas = canvasDraw)}
