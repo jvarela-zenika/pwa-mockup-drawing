@@ -3,6 +3,10 @@ import './ExploreContainer.css';
 import {IonApp, IonButton, IonButtons, IonContent, IonIcon, IonRow, IonToolbar} from "@ionic/react";
 import {arrowRedoOutline, arrowUndoOutline, trashOutline} from "ionicons/icons";
 import CanvasDraw from "react-canvas-draw";
+import {
+    Plugins,
+    StatusBarStyle,
+} from '@capacitor/core/dist/esm';
 
 interface ContainerProps {
     name: string;
@@ -11,9 +15,11 @@ interface ContainerProps {
 const CanvasDrawCustom: FunctionComponent = () => {
 
     let canvas: CanvasDraw | null;
+    const { StatusBar } = Plugins;
 
     return (
         <IonContent>
+            {StatusBar.hide()}
             <IonRow>
                 <CanvasDraw
                     ref={canvasDraw => (canvas = canvasDraw)}
@@ -26,7 +32,7 @@ const CanvasDrawCustom: FunctionComponent = () => {
                     lazyRadius={0}
                 />
             </IonRow>
-            <IonRow>
+            <IonRow style={{borderTop: "#000 solid"}}>
                 <IonToolbar>
                     <IonButtons slot={"start"}>
                         <IonButtons>
