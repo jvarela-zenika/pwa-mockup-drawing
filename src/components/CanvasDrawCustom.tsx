@@ -22,6 +22,8 @@ const CanvasDrawCustom: FunctionComponent = () => {
                     brushRadius={2}
                     brushColor={"#000"}
                     hideGrid={true}
+                    loadTimeOffset={0}
+                    lazyRadius={0}
                 />
             </IonRow>
             <IonRow>
