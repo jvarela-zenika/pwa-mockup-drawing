@@ -1,12 +1,11 @@
-import React, {FunctionComponent, useEffect} from 'react';
+import React, {FunctionComponent, useEffect, useState} from 'react';
 import './ExploreContainer.css';
 import {IonApp, IonButton, IonButtons, IonContent, IonIcon, IonRow, IonToolbar} from "@ionic/react";
 import {arrowRedoOutline, arrowUndoOutline, trashOutline} from "ionicons/icons";
 import CanvasDraw from "react-canvas-draw";
-import {
-    Plugins,
-    StatusBarStyle,
-} from '@capacitor/core/dist/esm';
+import {Plugins} from '@capacitor/core/dist/esm';
+import firebase from "firebase";
+
 
 interface ContainerProps {
     name: string;
@@ -14,18 +13,53 @@ interface ContainerProps {
 
 const CanvasDrawCustom: FunctionComponent = () => {
 
-    let canvas: CanvasDraw | null;
-    const { StatusBar } = Plugins;
+    let drawingCanvas: CanvasDraw | null;
+    const {StatusBar} = Plugins;
+    let canvasDrawImageHtmlElement: HTMLCanvasElement | undefined;
 
-    useEffect(() => {StatusBar.hide()}, [])
+    const connectToFirebase = async () => {
+        const config = {
+            apiKey: "AIzaSyBgtpmqpfdqBOA6sQcYNaqzY5xOLnkG3tg",
+            authDomain: "mockup-to-html.firebaseapp.com",
+            databaseURL: "https://mockup-to-html.firebaseio.com",
+            projectId: "mockup-to-html",
+            storageBucket: "mockup-to-html.appspot.com",
+            messagingSenderId: "735909160162",
+            appId: "1:735909160162:web:ac85fa4f9e97a3a53a2abb"
+        };
+
+        await firebase.initializeApp(config);
+    }
+
+    useEffect(() => {
+        const getCanvasAsBase64 = async () => {
+            canvasDrawImageHtmlElement =
+                Array.from(document.getElementsByClassName("canvasDraw")[0].children)
+                    .filter(
+                        v => v.attributes.getNamedItem("style")?.value.includes("z-index: 11;")
+                    )[0] as HTMLCanvasElement;
+        }
+        StatusBar.hide();
+
+        getCanvasAsBase64()
+            .then(sendDraw);
+
+    }, [])
+
+    const sendDraw = () => {
+
+        console.log(canvasDrawImageHtmlElement?.toDataURL())
+        setTimeout(sendDraw, 1000)
+    }
 
     return (
         <IonContent>
             <IonRow>
                 <CanvasDraw
-                    ref={canvasDraw => (canvas = canvasDraw)}
+                    className={"canvasDraw"}
+                    ref={canvasDraw => (drawingCanvas = canvasDraw)}
                     canvasWidth={window.innerWidth}
-                    canvasHeight={window.innerHeight-80}
+                    canvasHeight={window.innerHeight - 80}
                     brushRadius={2}
                     brushColor={"#000"}
                     hideGrid={true}
@@ -42,14 +76,14 @@ const CanvasDrawCustom: FunctionComponent = () => {
                                 size={"large"}
                                 icon={arrowUndoOutline}
                                 onClick={() => {
-                                    canvas?.undo()
+                                    drawingCanvas?.undo()
                                 }}
                             />
                         </IonButtons>
                     </IonButtons>
                     <IonButtons slot={"end"}>
                         <IonButton onClick={() => {
-                            canvas?.clear()
+                            drawingCanvas?.clear()
                         }}>
                             <IonIcon
                                 slot={"end"}
