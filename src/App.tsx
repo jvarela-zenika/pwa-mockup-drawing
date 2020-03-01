@@ -1,11 +1,6 @@
 import React from 'react';
 import {
-    IonApp, IonButtons,
-    IonButton,
-    IonIcon,
-    IonToolbar,
-    IonContent,
-    IonRow
+    IonApp
 } from '@ionic/react';
 
 /* Core CSS required for Ionic components to work properly */

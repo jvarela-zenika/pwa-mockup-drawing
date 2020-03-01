@@ -1,21 +1,33 @@
-import React, {FunctionComponent, useEffect, useState} from 'react';
+import React, {FunctionComponent, useState} from 'react';
 import './ExploreContainer.css';
-import {IonApp, IonButton, IonButtons, IonContent, IonIcon, IonRow, IonToolbar} from "@ionic/react";
-import {arrowRedoOutline, arrowUndoOutline, trashOutline} from "ionicons/icons";
+import {IonButton, IonButtons, IonContent, IonIcon, IonRow, IonToolbar} from "@ionic/react";
+import {arrowUndoOutline, trashOutline} from "ionicons/icons";
+import "@codetrix-studio/capacitor-google-auth";
 import CanvasDraw from "react-canvas-draw";
-import {Plugins} from '@capacitor/core/dist/esm';
-import firebase from "firebase";
-
-
-interface ContainerProps {
-    name: string;
-}
+import firebase from "firebase"
 
 const CanvasDrawCustom: FunctionComponent = () => {
 
-    let drawingCanvas: CanvasDraw | null;
-    const {StatusBar} = Plugins;
-    let canvasDrawImageHtmlElement: HTMLCanvasElement | undefined;
+    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+    const getCanvasAsBase64 = async () => {
+        return Array.from(document.getElementsByClassName("canvasDraw")[0].children)
+            .filter(
+                v => v.attributes.getNamedItem("style")?.value.includes("z-index: 11;")
+            )[0] as HTMLCanvasElement;
+    };
+
+    const signIn = async () => {
+        connectToFirebase().then(
+            () => firebase.auth()
+                .signInWithPopup(new firebase.auth.GoogleAuthProvider())
+                .then(() => setIsLoggedIn(true))
+        )
+    };
+
+    const signOut = async () => {
+        firebase.auth().signOut().then(() => setIsLoggedIn(false))
+    };
 
     const connectToFirebase = async () => {
         const config = {
@@ -29,61 +41,79 @@ const CanvasDrawCustom: FunctionComponent = () => {
         };
 
         await firebase.initializeApp(config);
-    }
-
-    useEffect(() => {
-        const getCanvasAsBase64 = async () => {
-            canvasDrawImageHtmlElement =
-                Array.from(document.getElementsByClassName("canvasDraw")[0].children)
-                    .filter(
-                        v => v.attributes.getNamedItem("style")?.value.includes("z-index: 11;")
-                    )[0] as HTMLCanvasElement;
-        }
-        StatusBar.hide();
-
-        getCanvasAsBase64()
-            .then(sendDraw);
-
-    }, [])
+    };
 
     const sendDraw = () => {
+        getCanvasAsBase64()
+            .then(canvasImage => {
+                console.log(canvasImage.toDataURL("image/png"));
+                firebase
+                    .storage()
+                    .ref()
+                    .child("mockup.png")
+                    .putString(
+                        canvasImage
+                            .toDataURL("image/png")
+                            .replace("data:image/png;base64,", ""),
+                        'base64'
+                    )
+            });
+    };
 
-        console.log(canvasDrawImageHtmlElement?.toDataURL())
-        setTimeout(sendDraw, 1000)
-    }
+    let drawingCanvas: CanvasDraw | null;
 
     return (
         <IonContent>
-            <IonRow>
-                <CanvasDraw
-                    className={"canvasDraw"}
-                    ref={canvasDraw => (drawingCanvas = canvasDraw)}
-                    canvasWidth={window.innerWidth}
-                    canvasHeight={window.innerHeight - 80}
-                    brushRadius={2}
-                    brushColor={"#000"}
-                    hideGrid={true}
-                    loadTimeOffset={0}
-                    lazyRadius={0}
-                />
+            <IonRow onTouchEnd={() => sendDraw()} onClick={() => sendDraw()}>
+                {
+                    (isLoggedIn
+                        && <CanvasDraw
+                            className={"canvasDraw"}
+                            ref={canvasDraw => (drawingCanvas = canvasDraw)}
+                            canvasWidth={window.innerWidth}
+                            canvasHeight={window.innerHeight - 80}
+                            brushRadius={1}
+                            brushColor={"#000"}
+                            hideGrid={true}
+                            loadTimeOffset={0}
+                            lazyRadius={0}
+                        />)
+                    || <p style={{textAlign: "center", minWidth: window.innerWidth}}>Veuillez vous connecter</p>
+                }
             </IonRow>
             <IonRow style={{borderTop: "#000 solid"}}>
                 <IonToolbar>
                     <IonButtons slot={"start"}>
+                        {
+                            (
+                                isLoggedIn &&
+                                <IonButton className="login-button" onClick={() => signOut()} expand="block" fill="solid"
+                                           color="danger">
+                                    Logout
+                                </IonButton>
+                            ) ||
+                            <IonButton className="login-button" onClick={() => signIn()} expand="block" fill="solid"
+                                       color="danger">
+                                Login
+                            </IonButton>
+                        }
+                    </IonButtons>
+                    {isLoggedIn &&
+                    <IonButtons slot={"end"}>
                         <IonButtons>
                             <IonIcon
-                                slot={"start"}
+                                slot={"end"}
                                 size={"large"}
                                 icon={arrowUndoOutline}
                                 onClick={() => {
-                                    drawingCanvas?.undo()
+                                    drawingCanvas?.undo();
+                                    sendDraw();
                                 }}
                             />
                         </IonButtons>
-                    </IonButtons>
-                    <IonButtons slot={"end"}>
                         <IonButton onClick={() => {
-                            drawingCanvas?.clear()
+                            drawingCanvas?.clear();
+                            sendDraw();
                         }}>
                             <IonIcon
                                 slot={"end"}
@@ -92,6 +122,7 @@ const CanvasDrawCustom: FunctionComponent = () => {
                             />
                         </IonButton>
                     </IonButtons>
+                    }
                 </IonToolbar>
             </IonRow>
         </IonContent>

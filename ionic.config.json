@@ -1,5 +1,7 @@
 {
   "name": "pwa-mockup-drawing",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "react"
 }

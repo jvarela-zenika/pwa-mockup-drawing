@@ -1,0 +1,14 @@
+{
+  "appId": "com.zenika.mockupDrawing",
+  "appName": "mockupDrawing",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "www",
+  "cordova": {},
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["email profile"],
+      "serverClientId": "735909160162-0rhc91tvgev33urb5ts950sfnkk8hn5b.apps.googleusercontent.com"
+    }
+  }
+}
