@@ -1,4 +1,4 @@
-import React, {FunctionComponent, useState} from 'react';
+import React, {FunctionComponent, useEffect, useState} from 'react';
 import './ExploreContainer.css';
 import {IonButton, IonButtons, IonContent, IonIcon, IonRow, IonToolbar} from "@ionic/react";
 import {arrowUndoOutline, trashOutline} from "ionicons/icons";
@@ -18,16 +18,18 @@ const CanvasDrawCustom: FunctionComponent = () => {
     };
 
     const signIn = async () => {
-        connectToFirebase().then(
-            () => firebase.auth()
-                .signInWithPopup(new firebase.auth.GoogleAuthProvider())
-                .then(() => setIsLoggedIn(true))
-        )
+        firebase.auth()
+            .signInWithPopup(new firebase.auth.GoogleAuthProvider())
+            .then(() => setIsLoggedIn(true));
     };
 
     const signOut = async () => {
         firebase.auth().signOut().then(() => setIsLoggedIn(false))
     };
+
+    useEffect(() => {
+        connectToFirebase();
+    }, []);
 
     const connectToFirebase = async () => {
         const config = {
@@ -87,7 +89,8 @@ const CanvasDrawCustom: FunctionComponent = () => {
                         {
                             (
                                 isLoggedIn &&
-                                <IonButton className="login-button" onClick={() => signOut()} expand="block" fill="solid"
+                                <IonButton className="login-button" onClick={() => signOut()} expand="block"
+                                           fill="solid"
                                            color="danger">
                                     Logout
                                 </IonButton>
