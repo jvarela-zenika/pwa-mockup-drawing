@@ -59,7 +59,7 @@ const CanvasDrawCustom: FunctionComponent = () => {
                             .replace("data:image/png;base64,", ""),
                         'base64'
                     )
-            });
+            }).then(() => firebase.database().ref().child('hasChangedMockup').set(true));
     };
 
     let drawingCanvas: CanvasDraw | null;
